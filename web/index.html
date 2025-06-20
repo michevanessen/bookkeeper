@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Bookkeeping Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'claude-bg': '#1a1a1a',
+                        'claude-sidebar': '#2d2d2d',
+                        'claude-chat': '#f8f8f8',
+                        'claude-input': '#ffffff',
+                        'claude-border': '#e5e5e5',
+                        'claude-text': '#1a1a1a',
+                        'claude-text-light': '#666666',
+                        'claude-accent': '#ff6b35'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .message-bubble {
+            animation: fadeInUp 0.3s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .typing-indicator {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+        
+        /* Custom scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+    </style>
+</head>
+<body class="bg-claude-bg text-white font-sans overflow-hidden">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <div class="w-80 bg-claude-sidebar border-r border-gray-700 flex flex-col">
+            <!-- Header -->
+            <div class="p-4 border-b border-gray-700">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-claude-accent rounded-lg flex items-center justify-center">
+                        <span class="text-white font-bold text-sm">AI</span>
+                    </div>
+                    <div>
+                        <h1 class="font-semibold text-white">Bookkeeping Assistant</h1>
+                        <p class="text-xs text-gray-400">AI-powered financial management</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="p-4 border-b border-gray-700">
+                <h3 class="text-sm font-medium text-gray-300 mb-3">Quick Actions</h3>
+                <div class="space-y-2">
+                    <button onclick="sendQuickMessage('What transactions need categorizing?')" 
+                            class="w-full text-left px-3 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors text-sm text-gray-200">
+                        📋 Review Transactions
+                    </button>
+                    <button onclick="sendQuickMessage('Show me this month\\'s expenses')" 
+                            class="w-full text-left px-3 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors text-sm text-gray-200">
+                        💰 Monthly Expenses
+                    </button>
+                    <button onclick="sendQuickMessage('Generate a financial summary')" 
+                            class="w-full text-left px-3 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors text-sm text-gray-200">
+                        📊 Financial Summary
+                    </button>
+                    <button onclick="sendQuickMessage('Help me categorize expenses')" 
+                            class="w-full text-left px-3 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors text-sm text-gray-200">
+                        🏷️ Categorize Expenses
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Account Status -->
+            <div class="p-4 border-b border-gray-700">
+                <h3 class="text-sm font-medium text-gray-300 mb-3">Account Status</h3>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Connected Accounts:</span>
+                        <span class="text-green-400" id="account-count">2</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Uncategorized:</span>
+                        <span class="text-yellow-400" id="uncategorized-count">19</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Total Balance:</span>
+                        <span class="text-blue-400" id="total-balance">$12,902.33</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Slash Commands -->
+            <div class="p-4 flex-1">
+                <h3 class="text-sm font-medium text-gray-300 mb-3">Slash Commands</h3>
+                <div class="space-y-1 text-xs text-gray-400">
+                    <div>/status - Account overview</div>
+                    <div>/transactions - Recent activity</div>
+                    <div>/categorize - Review expenses</div>
+                    <div>/connect - Link accounts</div>
+                    <div>/export - Download data</div>
+                    <div>/help - Show all commands</div>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="p-4 border-t border-gray-700">
+                <div class="text-xs text-gray-500 text-center">
+                    AI Bookkeeping v0.1.0
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Chat Area -->
+        <div class="flex-1 flex flex-col bg-white">
+            <!-- Chat Header -->
+            <div class="bg-white border-b border-claude-border px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-lg font-semibold text-claude-text">Chat with AI Bookkeeper</h2>
+                        <p class="text-sm text-claude-text-light">Ask questions about your finances in natural language</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span class="text-sm text-claude-text-light">Connected</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Chat Messages -->
+            <div class="flex-1 overflow-y-auto custom-scrollbar px-6 py-4" id="chat-messages">
+                <!-- Welcome Message -->
+                <div class="message-bubble mb-6">
+                    <div class="flex items-start space-x-3">
+                        <div class="w-8 h-8 bg-claude-accent rounded-full flex items-center justify-center flex-shrink-0">
+                            <span class="text-white text-sm font-bold">AI</span>
+                        </div>
+                        <div class="flex-1">
+                            <div class="bg-gray-50 rounded-2xl rounded-tl-none px-4 py-3">
+                                <p class="text-claude-text">
+                                    👋 <strong>Welcome to your AI Bookkeeping Assistant!</strong>
+                                </p>
+                                <p class="text-claude-text mt-2">
+                                    I'm here to help you manage your finances through natural conversation. You can ask me questions like:
+                                </p>
+                                <ul class="text-claude-text mt-2 space-y-1 text-sm">
+                                    <li>• "What transactions need categorizing?"</li>
+                                    <li>• "Show me expenses from last week"</li>
+                                    <li>• "Categorize the coffee purchase as meals & entertainment"</li>
+                                    <li>• "Generate a monthly financial report"</li>
+                                </ul>
+                                <p class="text-claude-text-light text-sm mt-3">
+                                    You can also use slash commands like <code class="bg-gray-200 px-1 rounded">/status</code> for quick actions.
+                                </p>
+                            </div>
+                            <div class="text-xs text-claude-text-light mt-1 px-1">
+                                Just now
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Chat Input -->
+            <div class="border-t border-claude-border bg-white px-6 py-4">
+                <div class="flex items-end space-x-3">
+                    <div class="flex-1">
+                        <div class="relative">
+                            <textarea
+                                id="message-input"
+                                placeholder="Ask about your finances... (or type / for commands)"
+                                class="w-full px-4 py-3 border border-claude-border rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-claude-accent focus:border-transparent text-claude-text placeholder-gray-400"
+                                rows="1"
+                                style="max-height: 120px;"
+                            ></textarea>
+                            <div class="absolute right-3 bottom-3 text-xs text-claude-text-light">
+                                <span id="char-count">0</span>/1000
+                            </div>
+                        </div>
+                    </div>
+                    <button
+                        id="send-button"
+                        onclick="sendMessage()"
+                        disabled
+                        class="bg-claude-accent text-white p-3 rounded-2xl hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-claude-accent focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="text-xs text-claude-text-light mt-2 px-1">
+                    Press Enter to send, Shift+Enter for new line
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="chat.js"></script>
+</body>
+</html>
