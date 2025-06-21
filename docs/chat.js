@@ -340,8 +340,16 @@ function initializeMobileMenu() {
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('mobile-overlay');
     
+    console.log('Initializing mobile menu...', { hamburgerBtn, sidebar, overlay });
+    
+    if (!hamburgerBtn || !sidebar || !overlay) {
+        console.error('Mobile menu elements not found!');
+        return;
+    }
+    
     function toggleSidebar() {
         const isOpen = !sidebar.classList.contains('-translate-x-full');
+        console.log('Toggle sidebar, currently open:', isOpen);
         
         if (isOpen) {
             // Close sidebar
@@ -354,8 +362,17 @@ function initializeMobileMenu() {
         }
     }
     
-    hamburgerBtn.addEventListener('click', toggleSidebar);
-    overlay.addEventListener('click', toggleSidebar);
+    hamburgerBtn.addEventListener('click', (e) => {
+        console.log('Hamburger clicked!');
+        e.preventDefault();
+        toggleSidebar();
+    });
+    
+    overlay.addEventListener('click', (e) => {
+        console.log('Overlay clicked!');
+        e.preventDefault();
+        toggleSidebar();
+    });
     
     // Close sidebar when clicking on quick actions or slash commands
     sidebar.addEventListener('click', (e) => {
@@ -363,11 +380,14 @@ function initializeMobileMenu() {
             // Small delay to allow action to complete
             setTimeout(() => {
                 if (window.innerWidth < 768) { // Only on mobile
+                    console.log('Auto-closing sidebar on mobile after button click');
                     toggleSidebar();
                 }
             }, 100);
         }
     });
+    
+    console.log('Mobile menu initialized successfully!');
 }
 
 // Simulate real-time updates (in a real app, this would come from your backend)
