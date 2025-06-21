@@ -68,9 +68,19 @@
     </style>
 </head>
 <body class="bg-claude-bg text-white font-sans overflow-hidden">
-    <div class="flex h-screen">
+    <div class="flex h-screen relative">
+        <!-- Mobile Hamburger Button -->
+        <button id="hamburger-btn" class="fixed top-4 left-4 z-50 md:hidden bg-claude-accent text-white p-2 rounded-lg shadow-lg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+        </button>
+        
+        <!-- Mobile Overlay Background -->
+        <div id="mobile-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden hidden"></div>
+        
         <!-- Sidebar -->
-        <div class="w-80 bg-claude-sidebar border-r border-gray-700 flex flex-col">
+        <div id="sidebar" class="w-80 bg-claude-sidebar border-r border-gray-700 flex flex-col md:relative fixed inset-y-0 left-0 z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
             <!-- Header -->
             <div class="p-4 border-b border-gray-700">
                 <div class="flex items-center space-x-3">
@@ -148,23 +158,23 @@
         </div>
         
         <!-- Main Chat Area -->
-        <div class="flex-1 flex flex-col bg-white">
+        <div class="flex-1 flex flex-col bg-white md:ml-0">
             <!-- Chat Header -->
-            <div class="bg-white border-b border-claude-border px-6 py-4">
+            <div class="bg-white border-b border-claude-border px-6 py-4 md:px-6 px-16">
                 <div class="flex items-center justify-between">
                     <div>
                         <h2 class="text-lg font-semibold text-claude-text">Chat with AI Bookkeeper</h2>
-                        <p class="text-sm text-claude-text-light">Ask questions about your finances in natural language</p>
+                        <p class="text-sm text-claude-text-light hidden sm:block">Ask questions about your finances in natural language</p>
                     </div>
                     <div class="flex items-center space-x-2">
                         <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <span class="text-sm text-claude-text-light">Connected</span>
+                        <span class="text-sm text-claude-text-light hidden sm:inline">Connected</span>
                     </div>
                 </div>
             </div>
             
             <!-- Chat Messages -->
-            <div class="flex-1 overflow-y-auto custom-scrollbar px-6 py-4" id="chat-messages">
+            <div class="flex-1 overflow-y-auto custom-scrollbar px-4 md:px-6 py-4" id="chat-messages">
                 <!-- Welcome Message -->
                 <div class="message-bubble mb-6">
                     <div class="flex items-start space-x-3">
@@ -182,15 +192,16 @@
                                 <ul class="text-claude-text mt-2 space-y-1 text-sm">
                                     <li>• "What transactions need categorizing?"</li>
                                     <li>• "Show me expenses from last week"</li>
-                                    <li>• "Categorize the coffee purchase as meals & entertainment"</li>
-                                    <li>• "Generate a monthly financial report"</li>
+                                    <li class="hidden sm:list-item">• "Categorize the coffee purchase as meals & entertainment"</li>
+                                    <li class="hidden sm:list-item">• "Generate a monthly financial report"</li>
                                 </ul>
                                 <p class="text-claude-text-light text-sm mt-3">
-                                    You can also use slash commands like <code class="bg-gray-200 px-1 rounded">/status</code> for quick actions.
+                                    You can also use slash commands like <code class="bg-gray-200 px-1 rounded">/status</code> for quick actions<span class="hidden sm:inline"> or tap the menu button on mobile</span>.
                                 </p>
                             </div>
                             <div class="text-xs text-claude-text-light mt-1 px-1">
-                                Just now
+                                <span class="sm:hidden">Tap ☰ for commands</span>
+                                <span class="hidden sm:inline">Just now</span>
                             </div>
                         </div>
                     </div>
@@ -198,14 +209,14 @@
             </div>
             
             <!-- Chat Input -->
-            <div class="border-t border-claude-border bg-white px-6 py-4">
+            <div class="border-t border-claude-border bg-white px-4 md:px-6 py-4">
                 <div class="flex items-end space-x-3">
                     <div class="flex-1">
                         <div class="relative">
                             <textarea
                                 id="message-input"
                                 placeholder="Ask about your finances... (or type / for commands)"
-                                class="w-full px-4 py-3 border border-claude-border rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-claude-accent focus:border-transparent text-claude-text placeholder-gray-400"
+                                class="w-full px-4 py-3 border border-claude-border rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-claude-accent focus:border-transparent text-claude-text placeholder-gray-400 text-sm md:text-base"
                                 rows="1"
                                 style="max-height: 120px;"
                             ></textarea>
@@ -217,14 +228,14 @@
                     <button
                         id="send-button"
                         disabled
-                        class="bg-claude-accent text-white p-3 rounded-2xl hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-claude-accent focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        class="bg-claude-accent text-white p-3 rounded-2xl hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-claude-accent focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex-shrink-0"
                     >
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
                         </svg>
                     </button>
                 </div>
-                <div class="text-xs text-claude-text-light mt-2 px-1">
+                <div class="text-xs text-claude-text-light mt-2 px-1 hidden sm:block">
                     Press Enter to send, Shift+Enter for new line
                 </div>
             </div>

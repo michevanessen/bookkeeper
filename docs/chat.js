@@ -331,7 +331,44 @@ function handleActionClick(actionType) {
 let chat;
 document.addEventListener('DOMContentLoaded', () => {
     chat = new BookkeepingChat();
+    initializeMobileMenu();
 });
+
+// Mobile menu functionality
+function initializeMobileMenu() {
+    const hamburgerBtn = document.getElementById('hamburger-btn');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('mobile-overlay');
+    
+    function toggleSidebar() {
+        const isOpen = !sidebar.classList.contains('-translate-x-full');
+        
+        if (isOpen) {
+            // Close sidebar
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+        } else {
+            // Open sidebar
+            sidebar.classList.remove('-translate-x-full');
+            overlay.classList.remove('hidden');
+        }
+    }
+    
+    hamburgerBtn.addEventListener('click', toggleSidebar);
+    overlay.addEventListener('click', toggleSidebar);
+    
+    // Close sidebar when clicking on quick actions or slash commands
+    sidebar.addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+            // Small delay to allow action to complete
+            setTimeout(() => {
+                if (window.innerWidth < 768) { // Only on mobile
+                    toggleSidebar();
+                }
+            }, 100);
+        }
+    });
+}
 
 // Simulate real-time updates (in a real app, this would come from your backend)
 function updateAccountStatus() {
